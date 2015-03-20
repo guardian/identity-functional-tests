@@ -67,7 +67,7 @@ case class SignInSteps(implicit driver: WebDriver) extends TestLogging with Matc
   def signInUsingNewFaceBook() = {
     logger.step(s"Signing in using FaceBook")
     val signInPage = SignInSteps().clickSignInLink()
-    val faceBookSignInPage = signInPage.switchToNewSignIn().clickFaceBookSignInButton()
+    val faceBookSignInPage = signInPage.clickFaceBookSignInButton()
     faceBookSignInPage.enterEmail(Config().getUserValue("faceBookEmail"))
     faceBookSignInPage.enterPwd(Config().getUserValue("faceBookPwd"))
     faceBookSignInPage.loginInButton.click()
@@ -76,7 +76,7 @@ case class SignInSteps(implicit driver: WebDriver) extends TestLogging with Matc
   def signInUsingGoogle() = {
     logger.step(s"Signing in using Google")
     val signInPage = SignInSteps().clickSignInLink()
-    val googleSignInPage = signInPage.switchToNewSignIn().clickGoogleSignInButton()
+    val googleSignInPage = signInPage.clickGoogleSignInButton()
     googleSignInPage.enterEmail(Config().getUserValue("googleEmail"))
     googleSignInPage.enterPwd(Config().getUserValue("googlePwd"))
     googleSignInPage.loginInButton.click()

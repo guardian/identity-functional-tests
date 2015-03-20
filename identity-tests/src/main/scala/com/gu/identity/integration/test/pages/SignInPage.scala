@@ -39,11 +39,6 @@ class SignInPage(implicit driver: WebDriver) extends ParentPage {
     new GoogleSignInPage()
   }
 
-  def switchToNewSignIn(): SignInPage = {
-    driver.get(driver.getCurrentUrl + "?switchesOn=id-social-oauth")
-    this
-  }
-
   def clickRegisterNewUserLink(): RegisterPage = {
     registerLink.click()
     new RegisterPage()
