@@ -3,8 +3,9 @@ package com.gu.identity.integration.test
 import com.gu.integration.test.SeleniumTestSuite
 import com.gu.integration.test.util.FileUtil._
 import com.gu.integration.test.util.PropertyUtil._
+import org.scalatest.ParallelTestExecution
 
-trait IdentitySeleniumTestSuite extends SeleniumTestSuite {
+trait IdentitySeleniumTestSuite extends SeleniumTestSuite with ParallelTestExecution {
   //only used because of the need to have a static init block, which the companion object below acts as
   IdentitySeleniumTestSuite
 }
