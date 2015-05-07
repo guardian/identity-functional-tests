@@ -9,6 +9,7 @@ import org.openqa.selenium.WebDriver
 
 class SocialNetworkTests extends IdentitySeleniumTestSuite {
 
+  /*
   feature("Registration and sign-in using Facebook") {
     scenarioWeb("should be able to register using Facebook") { implicit driver: WebDriver =>
       val facebookUser = SocialNetworkSteps().createNewFacebookTestUser()
@@ -100,7 +101,6 @@ class SocialNetworkTests extends IdentitySeleniumTestSuite {
         SocialNetworkSteps().deleteFacebookTestUser(facebookUser)
       }
 
-    /*
     scenarioWeb("should be asked to re-authenticate when editing profile after logging in with Google") { implicit driver: WebDriver =>
       BaseSteps().goToStartPage()
       SignInSteps().signInUsingGoogle()
@@ -110,6 +110,6 @@ class SocialNetworkTests extends IdentitySeleniumTestSuite {
       val editProfilePage = googleConfirmPasswordDialog.clickChooseAccountButton()
       SocialNetworkSteps().checkUserIsOnEditProfilePage(editProfilePage)
     }
-    */
   }
+  */
 }
