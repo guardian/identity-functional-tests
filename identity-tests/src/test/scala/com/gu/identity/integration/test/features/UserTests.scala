@@ -14,7 +14,7 @@ import org.scalatest.EitherValues
 
 class UserTests extends IdentitySeleniumTestSuite with EitherValues {
 
-  feature("Create and changing a User") {
+  feature("Create and changing a User's details") {
 
     scenarioWeb("should not be able to create user with existing user name", CoreTest) { implicit driver: WebDriver =>
       val validationErrors : List[FormError] = UserSteps().createUserWithUserName(get("loginName")).left.value
