@@ -1,13 +1,19 @@
 package com.gu.identity.integration.test.features
 
+import java.net.URLEncoder
+import java.util.UUID
+
+import com.gu.automation.support.{Browser, Config}
 import com.gu.identity.integration.test.IdentitySeleniumTestSuite
 import com.gu.identity.integration.test.pages.{ContainerWithSigninModulePage, FrontPage}
 import com.gu.identity.integration.test.steps.{SignInSteps, SocialNetworkSteps, UserSteps}
-import com.gu.identity.integration.test.tags.{Unstable, CoreTest, OptionalTest, SocialTest}
+import com.gu.identity.integration.test.tags.{CoreTest, OptionalTest, SocialTest, Unstable}
 import com.gu.identity.integration.test.util.facebook.FacebookTestUser
 import com.gu.integration.test.steps.BaseSteps
-import org.openqa.selenium.WebDriver
+import org.joda.time.DateTime
+import org.openqa.selenium.{OutputType, TakesScreenshot, WebDriver}
 import org.scalatest.Tag
+import org.slf4j.MDC
 
 
 class SocialNetworkTests extends IdentitySeleniumTestSuite {
@@ -18,6 +24,58 @@ class SocialNetworkTests extends IdentitySeleniumTestSuite {
       val facebookUser = SocialNetworkSteps().createNewFacebookTestUser()
       try testFunction(driver)(facebookUser)
       finally SocialNetworkSteps().deleteFacebookTestUser(facebookUser)
+    })
+  }
+
+  //Extends scenarioWeb to not run Chrome browser for Google tests due to browser related bug
+  protected def scenarioGoogle(specText: String, testTags: Tag*)(testFunction: WebDriver => Any) {
+    def executeTestWithScreenshotOnException[T <: WebDriver](testFunction: T => Any, driver: T, testName: String) = {
+      try {
+        testFunction(driver)
+      } catch {
+        case e: Exception => failWithScreenshot(testName, driver, e)
+      } finally {
+        driver.quit()
+      }
+    }
+    def failWithScreenshot(testName: String, driver: WebDriver, e: Exception) = {
+      logger.error("Test failed")
+      try {
+        driver match {
+          case ts: TakesScreenshot => {
+            logger.info(s"[FAILED]${e.getMessage}")
+            logger.info("[SCREENSHOT]", ts.getScreenshotAs(OutputType.FILE))
+          }
+          case _ => throw new RuntimeException("Driver can't take screen shots.")
+        }
+      } catch {
+        case e: Exception => logger.error("Error taking screen shot.")}
+      throw e
+    }
+    val list: List[Browser] = Config().getBrowsers()
+    val browsers: List[Browser] = list diff List[Browser] {Browser("chrome", None)}
+    browsers.foreach(browser => {
+      val browserEnhancedSpecText = s"$specText on $browser"
+      scenario(browserEnhancedSpecText, testTags: _*)({ td =>
+        val tstashBaseURL = Config().getPluginValue("teststash.url")
+        sys.props.put("teststash.url", tstashBaseURL)
+        val setName = Config().getProjectName()
+        val setDate = DateTime.now.getMillis.toString
+        MDC.put("ID", UUID.randomUUID().toString)
+        MDC.put("setName", setName)
+        MDC.put("setDate", setDate)
+        MDC.put("testName", td.name)
+        MDC.put("testDate", DateTime.now.getMillis.toString)
+        MDC.put("phase", "STEP")
+        val tstashName = URLEncoder.encode(setName, "UTF-8")
+        val testRunId = Config().getTestRunId().getOrElse("")
+        val tstashURL = s"$tstashBaseURL/setLookup?setName=$tstashName&setDate=$setDate"
+        logger.info(s"[StartInfo]$tstashURL $testRunId")
+        logger.info("Test Name: " + td.name)
+
+        val driver = startDriver(td.name, browser)
+        executeTestWithScreenshotOnException(testFunction, driver, td.name)
+      })
     })
   }
 
@@ -142,9 +200,8 @@ class SocialNetworkTests extends IdentitySeleniumTestSuite {
   }
   feature("Registration and sign-in using Google") {
 
-    scenarioWeb("SN8: should be asked to re-authenticate when editing profile after logging in with Google", OptionalTest, SocialTest, Unstable) {
+    scenarioGoogle("SN8: should be asked to re-authenticate when editing profile after logging in with Google", OptionalTest, SocialTest, Unstable) {
       implicit driver: WebDriver =>
-        BaseSteps().goToStartPage()
         SignInSteps().signInUsingGoogle()
         val editAccountDetailsPage = UserSteps().goToEditProfilePage(new ContainerWithSigninModulePage())
         SocialNetworkSteps().checkUserGotReAuthenticationMessage(editAccountDetailsPage)
