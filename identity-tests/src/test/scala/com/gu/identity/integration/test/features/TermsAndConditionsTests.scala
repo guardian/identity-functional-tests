@@ -47,17 +47,6 @@ class TermsAndConditionsTests extends IdentitySeleniumTestSuite {
       val agreePage = TermsAndConditionsSteps().goToJobsSite.clickLoginAsExistingUser()
       TermsAndConditionsSteps().checkJobsTermsVisible(agreePage)
     }
-
-    scenarioWeb("should not see T&C's once user has accepted them", CoreTest, Unstable) { implicit driver: WebDriver =>
-      //This test works when run manually but fails in webdriver - appears to lose sign in status between sites
-      UserSteps().createRandomBasicUser().right.get
-      val agreePage = TermsAndConditionsSteps().goToJobsSite.clickLoginAsExistingUser()
-      TermsAndConditionsSteps().checkJobsTermsVisible(agreePage)
-      agreePage.clickContinue()
-      BaseSteps().goToStartPage()
-      TermsAndConditionsSteps().goToJobsSite.clickLoginAsApprovedUser()
-      driver.getCurrentUrl should be(Config().getUserValue("jobsStubUrl"))
-    }
   }
 
 }

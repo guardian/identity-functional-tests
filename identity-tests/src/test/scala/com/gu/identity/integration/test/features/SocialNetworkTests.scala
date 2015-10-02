@@ -7,7 +7,7 @@ import com.gu.automation.support.{Browser, Config}
 import com.gu.identity.integration.test.IdentitySeleniumTestSuite
 import com.gu.identity.integration.test.pages.{ContainerWithSigninModulePage, FrontPage}
 import com.gu.identity.integration.test.steps.{SignInSteps, SocialNetworkSteps, UserSteps}
-import com.gu.identity.integration.test.tags.{CoreTest, OptionalTest, SocialTest, Unstable}
+import com.gu.identity.integration.test.tags.{CoreTest, OptionalTest, SocialTest}
 import com.gu.identity.integration.test.util.facebook.FacebookTestUser
 import com.gu.integration.test.steps.BaseSteps
 import org.joda.time.DateTime
@@ -149,34 +149,6 @@ class SocialNetworkTests extends IdentitySeleniumTestSuite {
         SocialNetworkSteps().checkUserIsOnFacebook()
     }
 
-    scenarioFacebook("SN6: Facebook user can change email on profile and still sign in", OptionalTest, SocialTest, Unstable) {
-      implicit driver: WebDriver => implicit facebookUser: FacebookTestUser =>
-        val newEmail = System.currentTimeMillis() + "changed@changed.com"
-        val oldEmail: String = facebookUser.email.get
-        val pwd: String = facebookUser.password.get
-        //setup
-        SocialNetworkSteps().goToFacebookAsUser(facebookUser)
-        BaseSteps().goToStartPage()
-        val registerPage = SignInSteps().clickSignInLink().clickRegisterNewUserLink()
-        registerPage.clickRegisterWithFacebookButton().clickConfirmButton(oldEmail, pwd)
-        val editAccountDetailsPage = UserSteps().goToEditAccountPage(
-          new ContainerWithSigninModulePage()).clickConfirmWithFacebookButton
-          .enterPassword(pwd).clickContinueButton().clickEditAccountDetailsTab()
-        //change email
-        editAccountDetailsPage.enterEmailAddress(newEmail)
-        editAccountDetailsPage.saveChanges()
-        SignInSteps().signOut(new ContainerWithSigninModulePage())
-        SignInSteps().clickSignInLink()
-        SignInSteps().clickSignInWithFacebook().left.get
-        SignInSteps().checkUserIsLoggedIn(facebookUser.fullName)
-        BaseSteps().goToStartPage()
-        val signInEmail = UserSteps().goToEditAccountPage(new ContainerWithSigninModulePage())
-          .clickEditAccountDetailsTab().getEmailAddress
-
-        signInEmail should be(newEmail) //confirms facebook sign in was against correctly changed email
-    }
-
-
     scenarioFacebook("SN7: should be asked to re-request Facebook e-mail permissions after denying them the first time",
       OptionalTest, SocialTest) {
       implicit driver: WebDriver => implicit facebookUser: FacebookTestUser =>
@@ -195,19 +167,6 @@ class SocialNetworkTests extends IdentitySeleniumTestSuite {
         val authDialog2 = registerPage2.clickRegisterWithFacebookButton()
         authDialog2.clickConfirmButton(email, pwd)
         SignInSteps().checkUserIsLoggedIn(facebookUser.fullName)
-    }
-
-  }
-  feature("Registration and sign-in using Google") {
-
-    scenarioGoogle("SN8: should be asked to re-authenticate when editing profile after logging in with Google", OptionalTest, SocialTest, Unstable) {
-      implicit driver: WebDriver =>
-        SignInSteps().signInUsingGoogle()
-        val editAccountDetailsPage = UserSteps().goToEditProfilePage(new ContainerWithSigninModulePage())
-        SocialNetworkSteps().checkUserGotReAuthenticationMessage(editAccountDetailsPage)
-        val googleConfirmPasswordDialog = editAccountDetailsPage.clickConfirmWithGoogleButton
-        val editProfilePage = googleConfirmPasswordDialog.clickChooseAccountButton()
-        SocialNetworkSteps().checkUserIsOnEditProfilePage(editProfilePage)
     }
   }
 }
