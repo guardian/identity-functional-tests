@@ -46,7 +46,7 @@ class SocialNetworkTests extends IdentitySeleniumTestSuite {
         SignInSteps().checkUserIsNotLoggedIn(facebookUser.fullName)
     }
 
-    scenarioFacebook("SN3: should be auto signed in if registered and logged into Facebook", CoreTest, SocialTest) {
+    scenarioFacebook("SN3: should be auto signed in if registered and logged into Facebook", OptionalTest, SocialTest) {
       implicit driver: WebDriver => implicit facebookUser: FacebookTestUser =>
         SocialNetworkSteps().goToFacebookAsUser(facebookUser)
         val frontPage = new FrontPage()
